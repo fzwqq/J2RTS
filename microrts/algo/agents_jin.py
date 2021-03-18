@@ -263,7 +263,7 @@ class Agent2:
                 if _id in self.units_on_working:
                     push2buffer()
                 ####################################      0                                  1         2      3
-                self.units_on_working[str(u.ID)] = [np.copy(obs), (u, ua_type, ua_parm, ua_prod), time_stamp, [reward]]
+                self.units_on_working[str(u.ID)] = [np.copy(obs), [u, ua_type, ua_parm, ua_prod], time_stamp, [reward]]
         else:
             # print("network simulator")
             pass

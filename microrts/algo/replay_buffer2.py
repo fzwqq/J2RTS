@@ -49,9 +49,9 @@ class Batches:
         return torch.from_numpy(self.states).float().to(device), \
                torch.from_numpy(self.units).float().to(device), \
                torch.from_numpy(self.utts).float().to(device), \
-               torch.from_numpy(self.ua_type).long().to(device).unsqueeze(1), \
-               torch.from_numpy(self.ua_parm).long().to(device).unsqueeze(1), \
-               torch.from_numpy(self.ua_prod).long().to(device).unsqueeze(1), \
+               torch.from_numpy(self.ua_type.astype(int)).long().to(device).unsqueeze(1), \
+               torch.from_numpy(self.ua_parm.astype(int)).long().to(device).unsqueeze(1), \
+               torch.from_numpy(self.ua_prod.astype(int)).long().to(device).unsqueeze(1), \
                torch.from_numpy(self.next_states).float().to(device), \
                torch.from_numpy(self.rewards).float().to(device).unsqueeze(1), \
                torch.from_numpy(self.hxses).float().to(device) if self.hxses.all() else self.hxses, \
