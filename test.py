@@ -144,7 +144,8 @@ def self_play(args):
 
         algo.update(memory, iter_idx, device, logger)
         iter_idx += 1
-        if (epi_idx + 1) % 100 == 0:
+
+        if (epi_idx + 1)  > 10000 and (epi_idx + 1) % 1000 == 0:
             folder = settings.models_dir
             if not os.path.exists(folder):
                 os.mkdir(folder)

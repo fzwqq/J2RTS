@@ -160,7 +160,7 @@ def play(args):
                     # buffers[i]
                     agents[i][j].forget()
                 action_i.append(action)
-                if (epi_idx + 1) % 100 == 0:
+                if (epi_idx + 1)  > 10000 and (epi_idx + 1) % 1000 == 0:
                     folder = settings.models_dir
                     if not os.path.exists(folder):
                         os.mkdir(folder)
