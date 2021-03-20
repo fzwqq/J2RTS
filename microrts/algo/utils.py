@@ -13,7 +13,7 @@ def load_model(path, map_size, recurrent=False):
 
 def load_model2(path, map_size, recurrent=False):
     model = ActorCritic2(map_size, recurrent=recurrent)
-    model.load_state_dict(torch.load(path, map_loaction=torch.device("cup")))
+    model.load_state_dict(torch.load(path, map_location=torch.device("cpu")))
     return model
 
 @contextlib.contextmanager
