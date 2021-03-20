@@ -12,5 +12,5 @@ PATH=/seu_share/home/weiweiwu/anaconda3/bin:$PATH
 LD_LIBRARY_PATH=/seu_share/home/weiweiwu/anaconda3/lib:$LD_LIBRARY_PATH
 export JAVA_HOME  CLASSPATH PATH 
 cd ~/uRTS_v2
-python3 test_jin.py  --algo ppo -lr 1e-5 --env-id  fullgame-v0 --render 0 --saving-prefix Pp_Sp_Jv0_ --ai1_socket Jin --ai2_socket Jin
+python3 test_jin.py  --algo ppo -lr 1e-5 --env-id  fullgame-v0 --render 0 --saving-prefix Pp_SpCp_Jv0_ --ai1_socket Jin --ai2_socket Jin
 
