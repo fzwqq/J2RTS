@@ -1,4 +1,4 @@
-import multiprocessing as mp
+import torch.multiprocessing as mp
 import gym
 import torch
 from .vec_env import VecEnv
@@ -16,15 +16,20 @@ def make_env(env_id, opponent="socketAI"):
         env_id {[str} -- env
         opponent {str} -- the ai2 type
     """
-
-    def _thunk():
-        config = get_config(env_id)
-        config.ai2_type = opponent
-        env = gym.make(env_id)
-        # print(env.players[0].brain is env.players[1].brain)
-        return env
-
-    return _thunk
+    config = get_config(env_id)
+    config.ai2_type = opponent
+    env = gym.make(env_id)
+    # print(env.players[0].brain is env.players[1].brain)
+    return env
+    #
+    # def _thunk():
+    #     config = get_config(env_id)
+    #     config.ai2_type = opponent
+    #     env = gym.make(env_id)
+    #     # print(env.players[0].brain is env.players[1].brain)
+    #     return env
+    #
+    # return _thunk
 
 
 def make_vec_envs(envs_id, num_processes, context, model, league, maps_size, smooth_raitio=0):
@@ -32,9 +37,9 @@ def make_vec_envs(envs_id, num_processes, context, model, league, maps_size, smo
     assert len(league) <= num_processes, "league number overflow!"
     print(len(league), num_processes)
     # input()
-    envs = []
-    for i in range(num_processes):
-        envs.append(make_env(envs_id[i], league[i]))
+    # envs = []
+    # for i in range(num_processes):
+    #     envs.append(make_env(envs_id[i], league[i]))
     # envs = [make_env(env_id,) for i in range(num_processes)]
     # print(envs[0]().players[0].brain is envs[1]().players[0].brain)
     # env1 = envs[0]().players[0].brain
@@ -45,18 +50,22 @@ def make_vec_envs(envs_id, num_processes, context, model, league, maps_size, smo
     nagents = [2 if league[i] == 'socketAI' else 1 for i in range(num_processes)]
     agents = [[Agent2(model, smooth_sample_ratio=smooth_raitio, map_size=maps_size[i]) for _ in range(nagents[i])] for i in
               range(num_processes)]
-    envs = ParallelVecEnv(envs, context=context)
+    envs = ParallelVecEnv(envs_id, league, context=context)
     return envs, agents
 
 
 # def _subproc_worker(pipe, parent_pipe, env_fn_wrapper, obs_bufs, obs_shapes, obs_dtypes, keys):
-def _subproc_worker(pipe, parent_pipe, env_fn_wrapper):
+def _subproc_worker(pipe, parent_pipe, env_id, opponent):
     """
     Control a single environment instance using IPC and
     shared memory.
     """
-
-    env = env_fn_wrapper()
+    config = get_config(env_id)
+    config.ai2_type = opponent
+    config.socket_ai1_type = "Jin"
+    config.socket_ai2_type = "Jin"
+    config.render = 1
+    env = gym.make(env_id)
     # print(env)
     # sleep(5)
     # env = env_fn_wrapper()
@@ -99,7 +108,7 @@ class ParallelVecEnv(VecEnv):
     """[summary]
     """
 
-    def __init__(self, env_fns, context='spawn', ):
+    def __init__(self, envs, league, context='spawn'):
         self.waiting_step = False
         self.closed = False
 
@@ -121,14 +130,14 @@ class ParallelVecEnv(VecEnv):
 
         self.parent_pipes = []
         self.procs = []
-        for i, env_fn in enumerate(env_fns):
+        for i, env in enumerate(envs):
             # wrapped_fn = CloudpickleWrapper(env_fn)
-            wrapped_fn = env_fn
+
             parent_pipe, child_pipe = ctx.Pipe()
             # proc = ctx.Process(target=_subproc_worker,
             # args=(child_pipe, parent_pipe, wrapped_fn, obs_buf, self.obs_shapes, self.obs_dtypes, self.obs_keys))
             proc = ctx.Process(target=_subproc_worker,
-                               args=(child_pipe, parent_pipe, wrapped_fn))
+                               args=(child_pipe, parent_pipe, env, league[i]))
             # proc.daemon = True
             self.procs.append(proc)
             self.parent_pipes.append(parent_pipe)
@@ -136,7 +145,7 @@ class ParallelVecEnv(VecEnv):
             child_pipe.close()
         self.waiting_step = False
         self.viewer = None
-        super(ParallelVecEnv, self).__init__(len(env_fns))
+        super(ParallelVecEnv, self).__init__(len(envs))
 
     # def get_players(self):
     #     for pipe in self.parent_pipes:

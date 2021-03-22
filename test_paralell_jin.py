@@ -122,7 +122,7 @@ def play(args):
     print('All leagues participated are', league)
     # input()
 
-    envs, agents = make_vec_envs(envs_id, num_process, "fork", nn, league=league, maps_size=maps_size)
+    envs, agents = make_vec_envs(envs_id, num_process, "spawn", nn, league=league, maps_size=maps_size)
 
     buffers = [ReplayBuffer2(config.max_cycles + 100) for _ in range(len(agents))]
     import time
