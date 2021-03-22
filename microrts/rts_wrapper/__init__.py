@@ -213,6 +213,44 @@ environments = [
             }
     },
     {
+        'id': "fullgame-v2",
+        'entry_point': "microrts.rts_wrapper.envs:BattleEnv",
+        'kwargs':
+            {
+                'config': Config(
+                    ai1_type='socketAI',
+                    ai2_type='socketAI',
+                    map_path=os.path.join(settings.map_dir, '8x8/bases8x8.xml'),
+                    height=8,
+                    width=8,
+                    self_play=True,
+                    # period=20,
+                    max_cycles=2000,
+                    max_episodes=1000000000,
+                ),
+
+            }
+    },
+{
+        'id': "fullgame-v3",
+        'entry_point': "microrts.rts_wrapper.envs:BattleEnv",
+        'kwargs':
+            {
+                'config': Config(
+                    ai1_type='socketAI',
+                    ai2_type='socketAI',
+                    map_path=os.path.join(settings.map_dir, '10x10/basesWorkers10x10.xml'),
+                    height=8,
+                    width=8,
+                    self_play=True,
+                    # period=20,
+                    max_cycles=2000,
+                    max_episodes=1000000000,
+                ),
+
+            }
+    },
+    {
         'id': "Digdig-v0",
         'entry_point': "microrts.rts_wrapper.envs:BattleEnv",
         'kwargs':
