@@ -47,10 +47,12 @@ def self_play(args):
         #     input()
         memory.push(**transitions)
 
-    get_config(args.env_id).render = args.render
-    get_config(args.env_id).ai2_type = args.opponent
-    get_config(args.env_id).socket_ai1_type = args.ai1_socket
-    get_config(args.env_id).socket_ai2_type = args.ai2_socket
+
+    config = get_config(args.env_id)
+    config.render = args.render
+    config.ai2_type = args.opponent
+    config.socket_ai1_type = args.ai1_socket
+    config.socket_ai2_type = args.ai2_socket
 
     env = gym.make(args.env_id)
     # assert env.ai1_type == "socketAI" and env.ai2_type == "socketAI", "This env is not for self-play"
@@ -137,9 +139,9 @@ def self_play(args):
                                       agents[i].rewards / obses_t[i].info["time_stamp"], epi_idx)
                     # writer.add_scalar("rewards_per_step", agents[i].rewards / (obses_t[i].info["time_stamp"]), epi_idx)
                     # writer.add_scalar("rewards", agents[i].rewards, epi_idx)
-                    writer.add_scalar("P0_rewards", agents[0].rewards/obses_t[i].info["time_stamp"], epi_idx)
-                    writer.add_scalar("P1_rewards", agents[1].rewards/obses_t[i].info["time_stamp"], epi_idx)
-                    writer.add_scalar("Return_diff", agents[0].rewards - agents[1].rewards , epi_idx)
+                    # writer.add_scalar("P0_rewards", agents[0].rewards/obses_t[i].info["time_stamp"], epi_idx)
+                    # writer.add_scalar("P1_rewards", agents[1].rewards/obses_t[i].info["time_stamp"], epi_idx)
+                    # writer.add_scalar("Return_diff", agents[0].rewards - agents[1].rewards , epi_idx)
                     writer.add_scalar("TimeStamp", obses_t[i].info["time_stamp"], epi_idx)
                     agents[i].forget()
             # if len(memory) >= update_step:

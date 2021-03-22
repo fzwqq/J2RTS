@@ -7,36 +7,36 @@ import copy
 from microrts.rts_wrapper.envs.utils_jin import action_sampler_v3, unit_feature_encoder_v2
 
 
-class FrameBuffer:
-    def __init__(self, map_size, feature_size, size=8):
-        self._maxsize = size
-        self._next_idx = 0  # next pos to store the new data
-        h, w = map_size
-        self._shape = (feature_size, h, w)
-
-        self._storage = np.zeros((size, feature_size, h, w))
-        pass
-
-    def refresh(self):
-        self._storage = np.zeros((self._maxsize, *self._shape))
-
-    def __len__(self):
-        return len(self._storage)
-
-    def push(self, frame):
-        self._storage[:-1] = self._storage[1:]
-        self._storage[-1] = frame
-        # if self._next_idx >= len(self._storage):
-        #     self._storage.append(frame)
-        # else:
-        #     self._storage[self._next_idx] = frame
-        # self._next_idx = (self._next_idx + 1) % self._maxsize
-
-    def fetch(self):
-        return self._storage
-
-    def flatten(self):
-        return self._storage.reshape(-1, *self._shape[-2:])
+# class FrameBuffer:
+#     def __init__(self, map_size, feature_size, size=8):
+#         self._maxsize = size
+#         self._next_idx = 0  # next pos to store the new data
+#         h, w = map_size
+#         self._shape = (feature_size, h, w)
+#
+#         self._storage = np.zeros((size, feature_size, h, w))
+#         pass
+#
+#     def refresh(self):
+#         self._storage = np.zeros((self._maxsize, *self._shape))
+#
+#     def __len__(self):
+#         return len(self._storage)
+#
+#     def push(self, frame):
+#         self._storage[:-1] = self._storage[1:]
+#         self._storage[-1] = frame
+#         # if self._next_idx >= len(self._storage):
+#         #     self._storage.append(frame)
+#         # else:
+#         #     self._storage[self._next_idx] = frame
+#         # self._next_idx = (self._next_idx + 1) % self._maxsize
+#
+#     def fetch(self):
+#         return self._storage
+#
+#     def flatten(self):
+#         return self._storage.reshape(-1, *self._shape[-2:])
 
 
 class Agent2:
@@ -47,7 +47,7 @@ class Agent2:
         self.steps = 0
         self.units_on_working = {}
         self._hidden_states = {}  # id -> hidden_states
-        self._frame_buffer = FrameBuffer(size=16, map_size=(4, 4), feature_size=50)
+        # self._frame_buffer = FrameBuffer(size=16, map_size=(4, 4), feature_size=50)
         self.brain = model
         self.random_rollout_steps = random_rollout_steps
         self.smooth_sample_ratio = smooth_sample_ratio
@@ -165,7 +165,8 @@ class Agent2:
             }
             # self.memory.push(**transitions)
             if callback:
-                callback(transitions)
+                callback(idx, transitions)
+
             # print(self.units_on_working[_id][3])
 
             # input()
@@ -173,7 +174,7 @@ class Agent2:
         assert self.brain is not None
         # self.player_actions.clear()
         obses = kwargs["obses"]
-
+        idx = kwargs["idx"]
         obs = obses.observation
         info = obses.info
         reward = obses.reward

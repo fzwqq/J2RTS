@@ -2,9 +2,9 @@ import multiprocessing as mp
 import gym
 import torch
 from .vec_env import VecEnv
-from microrts.algo.model import ActorCritic
-from microrts.algo.utils import load_model, CloudpickleWrapper, clear_mpi_env_vars
-from microrts.algo.agents import Agent
+from microrts.algo.model_jin import ActorCritic2
+from microrts.algo.utils import load_model2
+from microrts.algo.agents_jin import Agent2
 from .utils import get_config
 import time
 
@@ -16,40 +16,41 @@ def make_env(env_id, opponent="socketAI"):
         env_id {[str} -- env
         opponent {str} -- the ai2 type
     """
+
     def _thunk():
         config = get_config(env_id)
         config.ai2_type = opponent
         env = gym.make(env_id)
         # print(env.players[0].brain is env.players[1].brain)
         return env
+
     return _thunk
 
 
-def make_vec_envs(env_id, num_processes, context, model, league, smooth_raitio=0, map_size=(4,4) ):
-
+def make_vec_envs(envs_id, num_processes, context, model, league, maps_size, smooth_raitio=0):
     assert num_processes > 0, "Can not make no env!"
     assert len(league) <= num_processes, "league number overflow!"
     print(len(league), num_processes)
     # input()
     envs = []
     for i in range(num_processes):
-        envs.append(make_env(env_id, league[i]))
+        envs.append(make_env(envs_id[i], league[i]))
     # envs = [make_env(env_id,) for i in range(num_processes)]
     # print(envs[0]().players[0].brain is envs[1]().players[0].brain)
     # env1 = envs[0]().players[0].brain
     # env2 = envs[2]().players[0].brain
     # input()
-    config = get_config(env_id)
+    # config = get_config(envs_id)
     # nagents = 2 if (config.ai1_type == "socketAI" and config.ai2_type == "socketAI") else 1
-    nagents = [2 if league[i]=='socketAI' else 1 for i in range(num_processes)]
-    agents = [[Agent(model, smooth_sample_ratio=smooth_raitio,map_size=map_size) for _ in range(nagents[i])] for i in range(num_processes)]
+    nagents = [2 if league[i] == 'socketAI' else 1 for i in range(num_processes)]
+    agents = [[Agent2(model, smooth_sample_ratio=smooth_raitio, map_size=maps_size[i]) for _ in range(nagents[i])] for i in
+              range(num_processes)]
     envs = ParallelVecEnv(envs, context=context)
     return envs, agents
 
 
 # def _subproc_worker(pipe, parent_pipe, env_fn_wrapper, obs_bufs, obs_shapes, obs_dtypes, keys):
 def _subproc_worker(pipe, parent_pipe, env_fn_wrapper):
-
     """
     Control a single environment instance using IPC and
     shared memory.
@@ -91,16 +92,17 @@ def _subproc_worker(pipe, parent_pipe, env_fn_wrapper):
     except KeyboardInterrupt:
         print('ParallelVecEnv worker: got KeyboardInterrupt')
     finally:
-        env.close() 
+        env.close()
 
 
 class ParallelVecEnv(VecEnv):
     """[summary]
     """
+
     def __init__(self, env_fns, context='spawn', ):
         self.waiting_step = False
         self.closed = False
-                
+
         ctx = mp.get_context(context)
         # if spaces:
         #     observation_space, action_space = spaces
@@ -126,7 +128,7 @@ class ParallelVecEnv(VecEnv):
             # proc = ctx.Process(target=_subproc_worker,
             # args=(child_pipe, parent_pipe, wrapped_fn, obs_buf, self.obs_shapes, self.obs_dtypes, self.obs_keys))
             proc = ctx.Process(target=_subproc_worker,
-                        args=(child_pipe, parent_pipe, wrapped_fn))
+                               args=(child_pipe, parent_pipe, wrapped_fn))
             # proc.daemon = True
             self.procs.append(proc)
             self.parent_pipes.append(parent_pipe)
@@ -135,14 +137,13 @@ class ParallelVecEnv(VecEnv):
         self.waiting_step = False
         self.viewer = None
         super(ParallelVecEnv, self).__init__(len(env_fns))
-    
 
     # def get_players(self):
     #     for pipe in self.parent_pipes:
     #         pipe.send(('getp',None))
 
     #     return [pipe.recv() for pipe in self.parent_pipes]
-    
+
     def reset(self):
         """
         Reset all the environments and return an array of
@@ -159,7 +160,6 @@ class ParallelVecEnv(VecEnv):
             pipe.send(('reset', None))
         return [pipe.recv() for pipe in self.parent_pipes]
 
-
     def step_async(self, actions):
         """
         Tell all the environments to start taking a step
@@ -173,7 +173,6 @@ class ParallelVecEnv(VecEnv):
             # print(len(act))
             pipe.send(('step', act))
         self.waiting_step = True
-
 
     def step_wait(self):
         """
@@ -200,15 +199,15 @@ def play(env_id, nn_path=None):
         for registered in environments:
             if registered["id"] == env_id:
                 return registered['kwargs']['config'].height, registered['kwargs']['config'].width
-    
+
     start_from_scratch = nn_path is None
     map_size = get_map_size()
 
     if start_from_scratch:
-        nn = ActorCritic(map_size)
+        nn = ActorCritic2(map_size)
     else:
-        nn = load_model(nn_path, map_size)
-    
+        nn = load_model2(nn_path, map_size)
+
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     # device = "cpu"
     nn.share_memory()
