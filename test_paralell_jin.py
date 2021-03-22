@@ -94,12 +94,6 @@ def play(args):
 
     nn_path = args.model_path
     start_from_scratch = nn_path is None
-
-    # config = get_config(args.envs_id[0])
-    # config.render = args.render
-    # config.ai2_type = args.opponent
-    # config.max_episodes = int(args.episodes)
-    # map_size = config.height, config.width
     Agent2.gamma = args.gamma
     # memory = ReplayBuffer2(10000)
 
@@ -108,7 +102,7 @@ def play(args):
     else:
         nn = load_model2(os.path.join(settings.models_dir, nn_path), map_size, args.recurrent)
 
-    nn.share_memory()
+    # nn.share_memory()
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     # device = "cpu"
     print(device)
@@ -160,6 +154,7 @@ def play(args):
             debug=args.debug,
         )
     writer = SummaryWriter()
+    Ts = [0 for _ in range(num_process)]
     iter_idx = 0
     epi_idx = 0
     while 1:
@@ -167,14 +162,13 @@ def play(args):
         actions_n = []
         for i in range(num_process):
             action_i = []
+            Ts[i] += 1
             for j in range(len(obses_n[i])):
-                # if T % (update_steps * num_process) == 0:
-                #     T = 1
-                #     print('Update...')
-                #     input()
-                #     algo.update(memory, iter_idx, callback=logger, device=device)
-                #     iter_idx += 1
-
+                if sum(Ts) % 1024 == 0:
+                    for k in range(num_process):
+                        Ts[k] = 0
+                        algo.update(buffers[k], iter_idx, callback=logger, device=device)
+                    iter_idx += 1
                 if not obses_n[i][j].done:
                     if args.algo == 'ppo':
                         action = agents[i][j].think(sp_ac=algo.target_net, callback=memo_inserter2, debug=args.debug,
@@ -197,7 +191,9 @@ def play(args):
                                             accelerator=device, mode="train", idx=i)
                     # buffers[i]
                     agents[i][j].forget()
+
                 action_i.append(action)
+
                 if (epi_idx + 1) > 10000 and (epi_idx + 1) % 1000 == 0:
                     folder = settings.models_dir
                     if not os.path.exists(folder):
@@ -205,9 +201,9 @@ def play(args):
                     torch.save(nn.state_dict(),
                                os.path.join(settings.models_dir, args.saving_prefix + str(int(epi_idx)) + ".pth"))
 
-            if obses_n[i][0].done:
-                print(len(buffers[i]))
-                algo.update(buffers[i], iter_idx, callback=logger, device=device)
+            # if obses_n[i][0].done:
+            #     print(len(buffers[i]))
+            #     algo.update(buffers[i], iter_idx, callback=logger, device=device)
                 # if T % (update_steps * num_process) == 0:
                 #     T = 1
                 #     # print('Update...')
