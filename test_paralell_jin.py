@@ -102,7 +102,7 @@ def play(args):
     else:
         nn = load_model2(os.path.join(settings.models_dir, nn_path), map_size, args.recurrent)
 
-    # nn.share_memory()
+    nn.share_memory()
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     # device = "cpu"
     print(device)
@@ -164,11 +164,6 @@ def play(args):
             action_i = []
             Ts[i] += 1
             for j in range(len(obses_n[i])):
-                if sum(Ts) % 1024 == 0:
-                    for k in range(num_process):
-                        Ts[k] = 0
-                        algo.update(buffers[k], iter_idx, callback=logger, device=device)
-                    iter_idx += 1
                 if not obses_n[i][j].done:
                     if args.algo == 'ppo':
                         action = agents[i][j].think(sp_ac=algo.target_net, callback=memo_inserter2, debug=args.debug,
@@ -204,6 +199,7 @@ def play(args):
             # if obses_n[i][0].done:
             #     print(len(buffers[i]))
             #     algo.update(buffers[i], iter_idx, callback=logger, device=device)
+
                 # if T % (update_steps * num_process) == 0:
                 #     T = 1
                 #     # print('Update...')
@@ -212,11 +208,16 @@ def play(args):
                 #     iter_idx += 1
 
             actions_n.append(action_i)
-
-        if time_stamp:
-            writer.add_scalar("TimeStamp", sum(time_stamp) / (len(time_stamp)), epi_idx)
         obses_n = envs.step(actions_n)
         frames += 1
+
+        for k in range(num_process):
+            if Ts[k] % 1024 == 0:
+                Ts[k] = 0
+                algo.update(buffers[k], iter_idx, callback=logger, device=device)
+            iter_idx += 1
+        if time_stamp:
+            writer.add_scalar("TimeStamp", sum(time_stamp) / (len(time_stamp)), epi_idx)
 
         if frames >= 1000:
             print("fps", frames * num_process / (time.time() - st))

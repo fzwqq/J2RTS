@@ -64,7 +64,7 @@ def _subproc_worker(pipe, parent_pipe, env_id, opponent):
     config.ai2_type = opponent
     config.socket_ai1_type = "Jin"
     config.socket_ai2_type = "Jin"
-    config.render = 1
+    config.render = 0
     env = gym.make(env_id)
     # print(env)
     # sleep(5)
