@@ -1,0 +1,68 @@
+Sender: LSF System <lsfadmin@gpu21>
+Subject: Job 18874: <AI9> in cluster <cluster1> Exited
+
+Job <AI9> was submitted from host <login01> by user <weiweiwu> in cluster <cluster1> at Tue Mar 23 03:21:18 2021
+Job was executed on host(s) <gpu21>, in queue <gpu_v100>, as user <weiweiwu> in cluster <cluster1> at Tue Mar 23 03:21:19 2021
+</seu_share/home/weiweiwu> was used as the home directory.
+</seu_share/home/weiweiwu/uRTS_v2/sub_job/multimaps_league> was used as the working directory.
+Started at Tue Mar 23 03:21:19 2021
+Terminated at Wed Mar 24 14:31:13 2021
+Results reported at Wed Mar 24 14:31:13 2021
+
+Your job looked like:
+
+------------------------------------------------------------
+# LSBATCH: User input
+#!/bin/bash
+#BSUB -J AI9
+#BSUB -o %J.out
+#BSUB -e %J.err
+#BSUB -q gpu_v100
+#BSUB -gpu num=1
+JAVA_HOME=/seu_share/home/weiweiwu/wlocal/jdk/jdk-11.0.1
+#JRE_HOME=${JAVA_HOME}/jre
+CLASSPATH=.:${JAVA_HOME}/lib
+PATH=$JAVA_HOME/bin:$PATH
+PATH=/seu_share/home/weiweiwu/anaconda3/bin:$PATH
+LD_LIBRARY_PATH=/seu_share/home/weiweiwu/anaconda3/lib:$LD_LIBRARY_PATH
+export JAVA_HOME  CLASSPATH PATH 
+cd ~/uRTS_v2
+python3 test_jin.py  --algo ppo -lr 1e-4 --env-id  fullgame-v3 --render 0 --saving-prefix v3_sp --ai1_socket Jin --ai2_socket Jin
+
+
+------------------------------------------------------------
+
+TERM_OWNER: job killed by owner.
+Exited with exit code 1.
+
+Resource usage summary:
+
+    CPU time :                                   734.00 sec.
+    Max Memory :                                 2474 MB
+    Average Memory :                             2470.09 MB
+    Total Requested Memory :                     -
+    Delta Memory :                               -
+    Max Swap :                                   -
+    Max Processes :                              5
+    Max Threads :                                68
+    Run time :                                   126594 sec.
+    Turnaround time :                            126595 sec.
+
+The output (if any) follows:
+
+Namespace(ai1_socket='Jin', ai2_socket='Jin', algo='ppo', debug=False, entropy_coef=0.01, env_id='fullgame-v3', episodes=100000.0, gamma=0.99, log_interval=100, lr=0.0001, model_path=None, opponent='socketAI', recurrent=False, render=0, saving_prefix='v3_sp', value_loss_coef=0.1)
+java -jar /seu_share/home/weiweiwu/uRTS_v2/microrts/rts_wrapper/microrts-java.jar --map /seu_share/home/weiweiwu/uRTS_v2/microrts/rts_wrapper/maps/10x10/basesWorkers10x10.xml --ai1_type socketAI --ai2_type socketAI --maxCycles 2000 --maxEpisodes 1000000000 --period 1 --render 0 --port1 50969 --port2 58433
+Player0 Wait for Java client connection...
+Player0: Send welcome msg to client...
+Client: ack!
+Player1 Wait for Java client connection...
+Player1: Send welcome msg to client...
+Client: ack!
+Server: Send reset command...
+Server: Send reset command...
+
+
+PS:
+
+Read file <18874.err> for stderr output of this job.
+
